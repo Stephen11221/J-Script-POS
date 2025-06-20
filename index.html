@@ -10,6 +10,7 @@
   <div class="max-w-2xl mx-auto">
     <h1 class="text-3xl font-bold text-center mb-6">Mini POS System</h1>
 
+    <!-- Add Product -->
     <div class="bg-white p-4 rounded shadow">
       <h2 class="text-xl font-semibold mb-2">Add Product</h2>
       <div class="grid grid-cols-1 gap-4">
@@ -21,8 +22,12 @@
       </div>
     </div>
 
+    <!-- Product List -->
     <div class="mt-6">
-      <h2 class="text-xl font-semibold mb-2">Product List</h2>
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold mb-2">Product List</h2>
+        <button onclick="clearAll()" class="text-red-500 text-sm underline">Clear All</button>
+      </div>
       <div id="productList" class="space-y-3"></div>
     </div>
   </div>
@@ -30,6 +35,20 @@
   <script>
     let products = [];
 
+    // Load from localStorage
+    function loadProducts() {
+      const stored = localStorage.getItem("products");
+      if (stored) {
+        products = JSON.parse(stored);
+      }
+    }
+
+    // Save to localStorage
+    function saveProducts() {
+      localStorage.setItem("products", JSON.stringify(products));
+    }
+
+    // Render products
     function renderProducts() {
       const list = document.getElementById("productList");
       list.innerHTML = "";
@@ -38,7 +57,7 @@
         list.innerHTML += `
           <div class="bg-white p-4 rounded shadow flex justify-between items-center">
             <div class="${soldClass}">
-              <strong>${product.name}</strong> - ${product.price}
+              <strong>${product.name}</strong> - ksh ${product.price}
             </div>
             <div class="space-x-2">
               <button onclick="editProduct(${index})" class="text-yellow-600 hover:underline">Edit</button>
@@ -49,32 +68,52 @@
       });
     }
 
+    // Add product
     function addProduct() {
       const name = document.getElementById("name").value;
       const price = parseFloat(document.getElementById("price").value);
-
       if (name && price) {
         products.push({ name, price, sold: false });
         document.getElementById("name").value = "";
         document.getElementById("price").value = "";
+        saveProducts();
         renderProducts();
       }
     }
 
+    // Edit product
     function editProduct(index) {
       const newName = prompt("Edit product name:", products[index].name);
       const newPrice = prompt("Edit product price:", products[index].price);
       if (newName && newPrice) {
         products[index].name = newName;
         products[index].price = parseFloat(newPrice);
+        saveProducts();
         renderProducts();
       }
     }
 
+    // Sell product
     function sellProduct(index) {
       products[index].sold = true;
+      saveProducts();
       renderProducts();
     }
+
+    // Clear all products
+    function clearAll() {
+      if (confirm("Are you sure you want to delete all products?")) {
+        products = [];
+        localStorage.removeItem("products");
+        renderProducts();
+      }
+    }
+
+    // On page load
+    window.onload = () => {
+      loadProducts();
+      renderProducts();
+    };
   </script>
 </body>
 </html>
